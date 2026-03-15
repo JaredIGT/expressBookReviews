@@ -34,14 +34,26 @@ public_users.get('/', async function (req, res) {
 });
 
 // Get book by ISBN
-public_users.get('/isbn/:isbn', async function (req, res) {
+public_users.get('/isbn/:isbn', async (req,res) => {
+
   const isbn = req.params.isbn;
+
   try {
-    const response = await axios.get(`http://localhost:5000/books/${isbn}`);
-    return res.status(200).json(response.data);
-  } catch (error) {
-    return res.status(404).json({message: "Book not found"});
+
+    const response = await axios.get("http://localhost:5000/");
+
+    const book = response.data[isbn];
+
+    if(!book){
+      return res.status(404).json({message:"Book not found"});
+    }
+
+    return res.status(200).json(book);
+
+  } catch(error){
+    return res.status(500).json({message:"Error retrieving book"});
   }
+
 });
 
 // Get books by author
@@ -52,6 +64,10 @@ public_users.get('/author/:author', async function (req, res) {
     let filteredBooks = Object.values(books).filter(
       (book) => book.author === author
     );
+    
+    if (filteredBooks.length === 0) {
+      return res.status(404).json({message: "No books found for the given author"});
+    }
 
     return res.status(200).json(filteredBooks);
   } catch (error) {
@@ -60,18 +76,28 @@ public_users.get('/author/:author', async function (req, res) {
 });
 
 // Get books by title
-public_users.get('/title/:title', async function (req, res) {
+public_users.get('/title/:title', async (req,res) => {
+
   const title = req.params.title;
 
-  try {
-    let filteredBooks = Object.values(books).filter(
-      (book) => book.title === title
+  try{
+
+    const response = await axios.get("http://localhost:5000/");
+
+    const books = Object.values(response.data).filter(
+      book => book.title === title
     );
 
-    return res.status(200).json(filteredBooks);
-  } catch (error) {
-    return res.status(500).json({message: "Error retrieving books"});
+    if(books.length === 0){
+      return res.status(404).json({message:"Book not found"});
+    }
+
+    return res.status(200).json(books);
+
+  }catch(error){
+    return res.status(500).json({message:"Error retrieving books"});
   }
+
 });
 
 //  Get book review
