@@ -3,7 +3,7 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
-
+const axios = require("axios");
 
 public_users.post("/register", (req,res) => {
   const username = req.body.username;
@@ -26,8 +26,7 @@ public_users.post("/register", (req,res) => {
 // Get all books using async/await
 public_users.get('/', async function (req, res) {
   try {
-    const response = await axios.get('http://localhost:5000/books');
-    return res.status(200).json(response.data);
+    return res.status(200).send(JSON.stringify(books, null, 4));
   } catch (error) {
     return res.status(500).json({message: "Error retrieving books"});
   }
@@ -61,10 +60,11 @@ public_users.get('/author/:author', async function (req, res) {
   const author = req.params.author;
 
   try {
-    let filteredBooks = Object.values(books).filter(
+    const response = await axios.get("http://localhost:5000/");
+    let filteredBooks = Object.values(response.data).filter(
       (book) => book.author === author
     );
-    
+
     if (filteredBooks.length === 0) {
       return res.status(404).json({message: "No books found for the given author"});
     }
